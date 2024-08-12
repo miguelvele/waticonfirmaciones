@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enviar Mensaje con WATI</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.9/flatpickr.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.9/flatpickr.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+<style>
+    body {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+
+        background-color: #e9ecef;
+        font-family: Arial, sans-serif;
+        margin: 20px;
+    }
+
+    .container {
+        background: white;
+        margin-top: 8%;
+        padding: 2rem;
+        border-radius: 20px;
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+        width: 100%;
+        max-width: 600px;
+    }
+
+    .custom-input {
+        border-radius: 10px;
+        border: 1px solid #ced4da;
+        box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+    }
+
+    .custom-input:hover {
+        box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.2);
+        background-color: #f8f9fa;
+    }
+
+    .custom-button {
+        background-color: #28a745;
+        border: none;
+        border-radius: 10px;
+        padding: 0.375rem 0.75rem;
+        color: white;
+    }
+
+    .custom-button:hover {
+        background-color: #218838;
+    }
+
+    .error-message {
+        color: red;
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+        display: block;
+    }
+
+    .templates-menu {
+        display: none;
+        position: absolute;
+        background: white;
+        border: 1px solid #ced4da;
+        border-radius: 5px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        max-height: 300px;
+        overflow-y: auto;
+        width: 100%;
+        top: 50px;
+    }
+
+    .templates-menu.active {
+        display: block;
+    }
+
+    .template-item {
+        padding: 10px;
+        cursor: pointer;
+    }
+
+    .template-item:hover {
+        background-color: #f8f9fa;
+    }
+
+    #templateButton {
+        margin-left: 10px;
+    }
+
+
+    #templateMenu {
+        display: none;
+        border: 1px solid #ccc;
+        padding: 10px;
+        max-height: 300px;
+        overflow-y: auto;
+    }
+
+    .template {
+        padding: 5px;
+        border-bottom: 1px solid #ddd;
+    }
+
+    .template:last-child {
+        border-bottom: none;
+    }
+
+    .error-message {
+        color: red;
+        font-size: 0.875em;
+    }
+</style>
+
+<body>
+    <div class="container">
+        <button id="templateButton">Buscar Plantillas</button>
+        <div id="templateMenu"></div>
+        <!-- El resto de tu formulario aquí -->
+    </div>
+
+    <div class="container" id="formContainer">
+        <h1>Enviar confirmacion de cita</h1>
+        <div class="mb-3">
+            <label for="CountryCode" class="form-label">Prefijo del país:</label>
+            <select class="form-control custom-input" id="CountryCode" required>
+                <option value="57" selected>+57 Colombia</option>
+                <option value="1">+1 USA</option>
+                <option value="52">+52 México</option>
+                <!-- Agregar más países según sea necesario -->
+            </select>
+        </div>
+        <div class="mb-3">
+            <label for="phone" class="form-label">Número de Teléfono:</label>
+            <input type="tel" class="form-control custom-input" id="phone" value="57"
+                placeholder="Ingresa el número con prefijo" required pattern="[0-9]{10}">
+            <div class="invalid-feedback">Por favor ingrese un número de teléfono válido.</div>
+        </div>
+        <div class="mb-3">
+            <label for="nombre" class="form-label">Nombre:</label>
+            <input type="text" class="form-control custom-input" id="nombre" required>
+            <div class="invalid-feedback">Por favor ingrese su nombre.</div>
+        </div>
+        <div class="mb-3">
+            <label for="documento" class="form-label">Documento:</label>
+            <input type="text" class="form-control custom-input" id="documento" required>
+            <div class="invalid-feedback">Por favor ingrese su documento.</div>
+        </div>
+        <div class="mb-3">
+            <label for="procedimiento" class="form-label">Procedimiento:</label>
+            <input type="text" class="form-control custom-input" id="procedimiento" required>
+            <div class="invalid-feedback">Por favor ingrese el procedimiento.</div>
+        </div>
+        <div class="mb-3">
+            <label for="profesional" class="form-label">Profesional:</label>
+            <input type="text" class="form-control custom-input" id="profesional" required>
+            <div class="invalid-feedback">Por favor ingrese el profesional.</div>
+        </div>
+        <div class="mb-3">
+            <label for="fecha" class="form-label">Fecha:</label>
+            <input type="text" class="form-control custom-input flatpickr" id="fecha" required>
+            <div class="invalid-feedback">Por favor seleccione una fecha.</div>
+        </div>
+        <div class="mb-3">
+            <label for="hora" class="form-label">Hora:</label>
+            <input type="text" class="form-control custom-input" id="hora" required>
+            <div class="invalid-feedback">Por favor ingrese una hora.</div>
+        </div>
+        <div class="mb-3">
+            <label for="direccion" class="form-label">Dirección:</label>
+            <input type="text" class="form-control custom-input" id="direccion"
+                value="Cl 47 # 48 – 63 Clinica Angiosur de Itagüí. Dos cuadras abajo de la clínica Antioquia">
+            <div class="invalid-feedback">Por favor ingrese una dirección.</div>
+        </div>
+        <div class="mb-3">
+            <label for="observaciones" class="form-label">Observaciones:</label>
+            <input type="text" class="form-control custom-input" id="observaciones"
+                value="Presentar historia clínica, Exámenes previos y otras ayudas diagnósticas si los tiene, recuerde que debe estar 30 minutos antes de la cita para todos los temas administrativos y llevar autorización">
+        </div>
+        <button class="btn custom-button w-100" id="sendButton" onclick="sendTemplateMessage()" disabled>Enviar
+            Mensaje</button>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            flatpickr('.flatpickr', {
+                dateFormat: 'd \\d\\e F',
+                locale: {
+                    firstDayOfWeek: 1,
+                    weekdays: {
+                        shorthand: ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'],
+                        longhand: ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado']
+                    },
+                    months: {
+                        shorthand: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'],
+                        longhand: ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']
+                    }
+                }
+            });
+
+            const inputs = document.querySelectorAll('.custom-input');
+            const sendButton = document.getElementById('sendButton');
+
+            inputs.forEach(input => {
+                input.addEventListener('input', checkInputs);
+            });
+
+            function checkInputs() {
+                const allFilled = [...inputs].every(input => input.value.trim() !== '');
+                sendButton.disabled = !allFilled;
+            }
+        });
+
+        function sendTemplateMessage() {
+            const CountryCode = document.getElementById('CountryCode').value;
+            const phone_number = document.getElementById('phone').value;
+            const nombre = document.getElementById('nombre').value;
+            const documento = document.getElementById('documento').value;
+            const procedimiento = document.getElementById('procedimiento').value;
+            const profesional = document.getElementById('profesional').value;
+            const fecha = document.getElementById('fecha').value;
+            const hora = document.getElementById('hora').value;
+            const direccion = document.getElementById('direccion').value;
+            const observaciones = document.getElementById('observaciones').value;
+
+            const api_url = 'https://live-mt-server.wati.io/5394/api/v1/sendTemplateMessages';
+            const api_token = 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJmNDkxMzE4OC1hMWRhLTQxMDQtYmVmNy1iMDRmOWRkMzI5NjYiLCJ1bmlxdWVfbmFtZSI6ImFkbWluQGFuZ2lvc3VyLmNvbSIsIm5hbWVpZCI6ImFkbWluQGFuZ2lvc3VyLmNvbSIsImVtYWlsIjoiYWRtaW5AYW5naW9zdXIuY29tIiwiYXV0aF90aW1lIjoiMDYvMDcvMjAyNCAwMDozOTo0NyIsImRiX25hbWUiOiI1Mzk0IiwiaHR0cDovL3NjaGVtYXMubWljcm9zb2Z0LmNvbS93cy8yMDA4LzA2L2lkZW50aXR5L2NsYWltcy9yb2xlIjoiQURNSU5JU1RSQVRPUiIsImV4cCI6MjUzNDAyMzAwODAwLCJpc3MiOiJDbGFyZV9BSSIsImF1ZCI6IkNsYXJlX0FJIn0.g4rL8m9WZkcx8LeYcZlg-_iYM1FigY9280QkVheoTpk';
+
+            const headers = {
+                'Authorization': api_token,
+                'Content-Type': 'application/json'
+            };
+
+            const payload = {
+                template_name: "confirmar_citas_teamv3",
+                broadcast_name: "Confirmación de Cita",
+                receivers: [
+                    {
+                        whatsappNumber: phone_number,
+                        customParams: [
+                            { name: 'Countrycode', value: CountryCode },
+                            { name: 'nombre', value: nombre },
+                            { name: 'documento', value: documento },
+                            { name: 'procedimiento', value: procedimiento },
+                            { name: 'profesional', value: profesional },
+                            { name: 'fecha', value: fecha },
+                            { name: 'hora', value: hora },
+                            { name: 'direccion', value: direccion },
+                            { name: 'observaciones', value: observaciones }
+                        ]
+                    }
+                ]
+            };
+
+            axios.post(api_url, payload, { headers })
+                .then(response => {
+                    if (response.status === 200) {
+                        alert("Mensaje enviado exitosamente");
+                        clearFields();
+                    } else {
+                        alert(`Error al enviar el mensaje: ${response.status}`);
+                    }
+                })
+                .catch(error => {
+                    alert(`Error al enviar el mensaje: ${error}`);
+                });
+        }
+
+        function clearFields() {
+            document.getElementById('phone').value = '57';
+            document.getElementById('nombre').value = '';
+            document.getElementById('documento').value = '';
+            document.getElementById('procedimiento').value = '';
+            document.getElementById('profesional').value = '';
+            document.getElementById('fecha').value = '';
+            document.getElementById('hora').value = '';
+            document.getElementById('direccion').value = 'Cl 47 # 48 – 63 Clinica Angiosur de Itagüí. Dos cuadras abajo de la clínica Antioquia';
+            document.getElementById('observaciones').value = "Presentar historia clínica, Exámenes previos y otras ayudas diagnósticas si los tiene, recuerde que debe estar 30 minutos antes de la cita para todos los temas administrativos y llevar autorización";
+        }
+
+
+
+
+
+
+
+
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const maxLength = 200;
+            const inputs = document.querySelectorAll('.custom-input');
+            const sendButton = document.getElementById('sendButton');
+            const searchTemplatesButton = document.getElementById('searchTemplates');
+            const templatesMenu = document.getElementById('templatesMenu');
+
+            inputs.forEach(input => {
+                input.addEventListener('input', function () {
+                    const value = this.value;
+                    let errorDiv = this.parentElement.querySelector('.error-message');
+                    if (value.length > 200) {
+                        this.style.borderColor = 'red';
+                        this.style.boxShadow = '0 0 5px red';
+                        if (!errorDiv) {
+                            errorDiv = document.createElement('div');
+                            errorDiv.className = 'error-message';
+                            errorDiv.textContent = `El campo supera el límite de 200 letras.`;
+                            this.parentElement.appendChild(errorDiv);
+                        }
+                        sendButton.disabled = true;
+                    } else {
+                        this.style.borderColor = '#ced4da';
+                        this.style.boxShadow = '2px 2px 5px rgba(0,0,0,0.1)';
+                        if (errorDiv) {
+                            errorDiv.remove();
+                        }
+                        const allValid = [...inputs].every(input => input.value.length <= 200);
+                        sendButton.disabled = !allValid;
+                    }
+                });
+            });
+
+            // Manejo del botón para buscar plantillas
+            document.getElementById('templateButton').addEventListener('click', function () {
+                const menu = document.getElementById('templateMenu');
+                if (menu.style.display === 'none' || menu.style.display === '') {
+                    fetchTemplates();
+                    menu.style.display = 'block';
+                } else {
+                    menu.style.display = 'none';
+                }
+            });
+
+            function fetchTemplates() {
+                const options = {
+                    method: 'GET',
+                    headers: {
+                        Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJiNDA3MTI1Zi00MjlhLTRhNmItOWYwNy1jNmZkOWFhOWQ1NDciLCJ1bmlxdWVfbmFtZSI6ImFkbWluQGFuZ2lvc3VyLmNvbSIsIm5hbWVpZCI6ImFkbWluQGFuZ2lvc3VyLmNvbSIsImVtYWlsIjoiYWRtaW5AYW5naW9zdXIuY29tIiwiYXV0aF90aW1lIjoiMDcvMjUvMjAyNCAxMjozMjoyMCIsImRiX25hbWUiOiJtdC1wcm9kLVRlbmFudHMiLCJ0ZW5hbnRfaWQiOiI1Mzk0IiwiaHR0cDovL3NjaGVtYXMubWljcm9zb2Z0LmNvbS93cy8yMDA4LzA2L2lkZW50aXR5L2NsYWltcy9yb2xlIjoiQURNSU5JU1RSQVRPUiIsImV4cCI6MjUzNDAyMzAwODAwLCJpc3MiOiJDbGFyZV9BSSIsImF1ZCI6IkNsYXJlX0FJIn0.24yEiOTZqYmAse0ze3oTD5XSDOOEAz5TuHKu3SvRlas'
+                    }
+                };
+
+                fetch('https://live-mt-server.wati.io/5394/api/v1/getMessageTemplates', options)
+                    .then(response => response.json())
+                    .then(data => {
+                        const approvedTemplates = data.messageTemplates.filter(template => template.status === 'APPROVED');
+                        if (approvedTemplates.length > 0) {
+                            displayTemplates(approvedTemplates);
+                        } else {
+                            document.getElementById('templateMenu').innerHTML = 'No se encontraron plantillas aprobadas.';
+                        }
+                    })
+                    .catch(err => console.error('Error:', err));
+            }
+
+            function displayTemplates(templates) {
+    const templateMenu = document.getElementById('templateMenu');
+    templateMenu.innerHTML = ''; // Limpiar el menú antes de añadir nuevas plantillas
+
+    templates.forEach(template => {
+        const button = document.createElement('button');
+        button.className = 'btn btn-primary'; // Asegúrate de que la clase sea la correcta
+        button.textContent = template.name; // Asegúrate de que `template.name` tenga el nombre correcto
+        button.dataset.template = JSON.stringify(template); // Almacena la plantilla completa en un atributo de datos
+
+        button.addEventListener('click', function () {
+            const selectedTemplate = JSON.parse(this.dataset.template);
+            updateFormFields(selectedTemplate);
+        });
+
+        templateMenu.appendChild(button);
+    });
+
+
+}
+
+let currentTemplateName = ''; // Definir al inicio del script
+
+function updateFormFields(template) {
+    const formContainer = document.getElementById('formContainer');
+
+    // Mantener los campos fijos
+    formContainer.innerHTML = `
+        <div class="mb-3">
+            <label for="CountryCode" class="form-label">Prefijo del país:</label>
+            <select class="form-control custom-input" id="CountryCode" required>
+                <option value="57" selected>+57 Colombia</option>
+                <option value="1">+1 USA</option>
+                <option value="52">+52 México</option>
+                <!-- Agregar más países según sea necesario -->
+            </select>
+        </div>
+        <div class="mb-3">
+            <label for="phone" class="form-label">Número de Teléfono:</label>
+            <input type="tel" class="form-control custom-input" id="phone" value="57"
+                placeholder="Ingresa el número con prefijo" required pattern="[0-9]{10}">
+            <div class="invalid-feedback">Por favor ingrese un número de teléfono válido.</div>
+        </div>
+    `;
+
+    // Actualizar `currentTemplateName`
+    currentTemplateName = template.template_name;
+
+    // Agregar campos de la plantilla
+    if (template.customParams && Array.isArray(template.customParams)) {
+        template.customParams.forEach(param => {
+            const input = document.createElement('div');
+            input.className = 'mb-3';
+            input.innerHTML = `
+                <label for="${param.name}" class="form-label">${param.name}:</label>
+                <input type="text" class="form-control custom-input" id="${param.name}" placeholder="Ingresa ${param.name}">
+            `;
+            formContainer.appendChild(input);
+        });
+    } else {
+        console.error('`template.customParams` no está definido o no es un array.');
+    }
+
+    // Asegurarse de que el botón de enviar mensaje esté presente
+    if (!document.getElementById('sendButton')) {
+        const sendButton = document.createElement('button');
+        sendButton.id = 'sendButton';
+        sendButton.className = 'btn btn-primary';
+        sendButton.textContent = 'Enviar Mensaje';
+        sendButton.addEventListener('click', sendTemplateMessage);
+        formContainer.appendChild(sendButton);
+    }
+}
+// Definiciones globales
+const api_url = 'https://live-mt-server.wati.io/5394/api/v1/sendTemplateMessages';
+const api_token = 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJmNDkxMzE4OC1hMWRhLTQxMDQtYmVmNy1iMDRmOWRkMzI5NjYiLCJ1bmlxdWVfbmFtZSI6ImFkbWluQGFuZ2lvc3VyLmNvbSIsIm5hbWVpZCI6ImFkbWluQGFuZ2lvc3VyLmNvbSIsImVtYWlsIjoiYWRtaW5AYW5naW9zdXIuY29tIiwiYXV0aF90aW1lIjoiMDYvMDcvMjAyNCAwMDozOTo0NyIsImRiX25hbWUiOiI1Mzk0IiwiaHR0cDovL3NjaGVtYXMubWljcm9zb2Z0LmNvbS93cy8yMDA4LzA2L2lkZW50aXR5L2NsYWltcy9yb2xlIjoiQURNSU5JU1RSQVRPUiIsImV4cCI6MjUzNDAyMzAwODAwLCJpc3MiOiJDbGFyZV9BSSIsImF1ZCI6IkNsYXJlX0FJIn0.g4rL8m9WZkcx8LeYcZlg-_iYM1FigY9280QkVheoTpk';
+
+const headers = {
+    'Authorization': api_token,
+    'Content-Type': 'application/json'
+};
+
+// Función para enviar el mensaje
+function sendTemplateMessage() {
+    const fields = ['CountryCode', 'phone', 'nombre', 'documento', 'procedimiento', 'profesional', 'fecha', 'hora', 'direccion', 'observaciones'];
+    const payload = {
+        template_name: currentTemplateName, // Usa la plantilla actual
+        broadcast_name: "Confirmación de Cita",
+        receivers: [
+            {
+                whatsappNumber: document.getElementById('phone').value,
+                customParams: fields.map(field => ({
+                    name: field,
+                    value: document.getElementById(field) ? document.getElementById(field).value : ''
+                }))
+            }
+        ]
+    };
+
+    axios.post(api_url, payload, { headers })
+        .then(response => {
+            if (response.status === 200) {
+                alert("Mensaje enviado exitosamente");
+                clearFields();
+            } else {
+                alert(`Error al enviar el mensaje: ${response.status}`);
+            }
+        })
+        .catch(error => {
+            alert(`Error al enviar el mensaje: ${error}`);
+        });
+}
+
+// Resto del código
+document.addEventListener('DOMContentLoaded', function () {
+    const maxLength = 200;
+    const inputs = document.querySelectorAll('.custom-input');
+    const sendButton = document.getElementById('sendButton');
+    const searchTemplatesButton = document.getElementById('searchTemplates');
+    const templatesMenu = document.getElementById('templatesMenu');
+
+    inputs.forEach(input => {
+        input.addEventListener('input', function () {
+            const value = this.value;
+            let errorDiv = this.parentElement.querySelector('.error-message');
+            if (value.length > 200) {
+                this.style.borderColor = 'red';
+                this.style.boxShadow = '0 0 5px red';
+                if (!errorDiv) {
+                    errorDiv = document.createElement('div');
+                    errorDiv.className = 'error-message';
+                    errorDiv.textContent = `El campo supera el límite de 200 letras.`;
+                    this.parentElement.appendChild(errorDiv);
+                }
+                sendButton.disabled = true;
+            } else {
+                this.style.borderColor = '#ced4da';
+                this.style.boxShadow = '2px 2px 5px rgba(0,0,0,0.1)';
+                if (errorDiv) {
+                    errorDiv.remove();
+                }
+                const allValid = [...inputs].every(input => input.value.length <= 200);
+                sendButton.disabled = !allValid;
+            }
+        });
+    });
+
+    // Manejo del botón para buscar plantillas
+    document.getElementById('templateButton').addEventListener('click', function () {
+        const menu = document.getElementById('templateMenu');
+        if (menu.style.display === 'none' || menu.style.display === '') {
+            fetchTemplates();
+            menu.style.display = 'block';
+        } else {
+            menu.style.display = 'none';
+        }
+    });
+
+    function fetchTemplates() {
+        const options = {
+            method: 'GET',
+            headers: {
+                Authorization: api_token
+            }
+        };
+
+        fetch('https://live-mt-server.wati.io/5394/api/v1/getMessageTemplates', options)
+            .then(response => response.json())
+            .then(data => {
+                const approvedTemplates = data.messageTemplates.filter(template => template.status === 'APPROVED');
+                if (approvedTemplates.length > 0) {
+                    displayTemplates(approvedTemplates);
+                } else {
+                    document.getElementById('templateMenu').innerHTML = 'No se encontraron plantillas aprobadas.';
+                }
+            })
+            .catch(err => console.error('Error:', err));
+    }
+
+    function displayTemplates(templates) {
+        const templateMenu = document.getElementById('templateMenu');
+        templateMenu.innerHTML = ''; // Limpiar el menú antes de añadir nuevas plantillas
+
+        templates.forEach(template => {
+            const button = document.createElement('button');
+            button.className = 'btn btn-primary'; // Asegúrate de que la clase sea la correcta
+            button.textContent = template.name; // Asegúrate de que `template.name` tenga el nombre correcto
+            button.dataset.template = JSON.stringify(template); // Almacena la plantilla completa en un atributo de datos
+
+            button.addEventListener('click', function () {
+                const selectedTemplate = JSON.parse(this.dataset.template);
+                updateFormFields(selectedTemplate);
+            });
+
+            templateMenu.appendChild(button);
+        });
+    }
+
+    let currentTemplateName = ''; // Definir al inicio del script
+
+    function updateFormFields(template) {
+        const formContainer = document.getElementById('formContainer');
+
+        // Mantener los campos fijos
+        formContainer.innerHTML = `
+            <div class="mb-3">
+                <label for="CountryCode" class="form-label">Prefijo del país:</label>
+                <select class="form-control custom-input" id="CountryCode" required>
+                    <option value="57" selected>+57 Colombia</option>
+                    <option value="1">+1 USA</option>
+                    <option value="52">+52 México</option>
+                    <!-- Agregar más países según sea necesario -->
+                </select>
+            </div>
+            <div class="mb-3">
+                <label for="phone" class="form-label">Número de Teléfono:</label>
+                <input type="tel" class="form-control custom-input" id="phone" value="57"
+                    placeholder="Ingresa el número con prefijo" required pattern="[0-9]{10}">
+                <div class="invalid-feedback">Por favor ingrese un número de teléfono válido.</div>
+            </div>
+        `;
+
+        // Actualizar `currentTemplateName`
+        currentTemplateName = template.template_name;
+
+        // Agregar campos de la plantilla
+        if (template.customParams && Array.isArray(template.customParams)) {
+            template.customParams.forEach(param => {
+                const input = document.createElement('div');
+                input.className = 'mb-3';
+                input.innerHTML = `
+                    <label for="${param.name}" class="form-label">${param.name}:</label>
+                    <input type="text" class="form-control custom-input" id="${param.name}" placeholder="Ingresa ${param.name}">
+                `;
+                formContainer.appendChild(input);
+            });
+        } else {
+            console.error('`template.customParams` no está definido o no es un array.');
+        }
+
+        // Asegurarse de que el botón de enviar mensaje esté presente
+        if (!document.getElementById('sendButton')) {
+            const sendButton = document.createElement('button');
+            sendButton.id = 'sendButton';
+            sendButton.className = 'btn btn-primary';
+            sendButton.textContent = 'Enviar Mensaje';
+            sendButton.addEventListener('click', sendTemplateMessage);
+            formContainer.appendChild(sendButton);
+        }
+    }
+
+    function clearFields() {
+        // Limpiar todos los campos del formulario
+        document.querySelectorAll('.custom-input').forEach(input => {
+            input.value = '';
+        });
+        document.getElementById('CountryCode').value = '57';
+        document.getElementById('phone').value = '';
+    }
+});
+        })
+
+
+    </script>
+</body>
+
+</html>
